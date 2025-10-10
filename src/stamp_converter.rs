@@ -1,4 +1,5 @@
 use std::fmt::{self, Display};
+use std::str::FromStr;
 
 use eyre::eyre;
 
@@ -15,7 +16,9 @@ pub struct Stamp {
     time: Option<TimeStampParts>,
 }
 
-impl Stamp {
+impl FromStr for Stamp {
+    type Err = eyre::ErrReport;
+
     fn from_str(s: &str) -> Result<Self> {
         let mut parts = s.split_whitespace();
 
@@ -27,17 +30,22 @@ impl Stamp {
         let date = DateParts::from_str(date_str)?;
 
         // Parse time and AM/PM parts, if present
+        let military_time_part = parts.next();
         let time_part = parts.next();
         let am_pm_part = parts.next();
 
-        let time = match (time_part, am_pm_part) {
-            (Some(time_str), Some(am_pm_str)) => Some(TimeStampParts::from_parts(time_str, am_pm_str)?),
+        let time = match (military_time_part, time_part, am_pm_part) {
+            (Some(military_str), Some(time_str), Some(am_pm_str)) => {
+                Some(TimeStampParts::from_parts(military_str, time_str, am_pm_str)?)
+            }
             _ => None,
         };
 
         Ok(Stamp { date, time })
     }
+}
 
+impl Stamp {
     fn formatted(&self, seps: &crate::Seperators) -> String {
         let date_formatted = self.date.formatted(seps.date_sep);
         if let Some(ref time_stamp) = self.time {
@@ -55,9 +63,20 @@ pub struct DateParts {
     year:  String,
 }
 
-impl DateParts {
+impl FromStr for DateParts {
+    type Err = eyre::ErrReport;
+
     fn from_str(s: &str) -> Result<Self> {
-        let date_components: Vec<&str> = s.split('/').collect();
+        let potential_seps = ['-', '/', '.'];
+
+        // let date_components: Vec<&str> = s.split('/').collect();
+        let date_components: Vec<&str> = if potential_seps.iter().any(|&sep| s.contains(sep)) {
+            let sep = potential_seps.iter().find(|&&sep| s.contains(sep)).unwrap();
+            s.split(*sep).collect()
+        } else {
+            return Err(eyre!("Invalid date format: no valid separator found"));
+        };
+
         if date_components.len() != 3 {
             return Err(eyre!("Invalid date format"));
         }
@@ -68,15 +87,19 @@ impl DateParts {
             year:  date_components[2].to_string(),
         })
     }
+}
 
+impl DateParts {
     fn formatted(&self, date_sep: &str) -> String {
-        let date_parts = vec![&self.year, &self.month, &self.day];
+        let date_parts = vec![self.year.as_str(), self.month.as_str(), self.day.as_str()];
         let mut buf = String::new();
         for part in date_parts {
             buf.push_str(part);
             buf.push_str(date_sep);
         }
-        buf.pop(); // Remove the trailing separator
+        // Remove the trailing separator
+        // Safe, as we did it outselves in the same fn
+        buf.pop();
         buf
     }
 }
@@ -88,12 +111,10 @@ pub struct TimeStampParts {
 }
 
 impl TimeStampParts {
-    fn from_parts(time_part: &str, am_pm_str: &str) -> Result<Self> {
-        let am_or_pm = AmOrPm::from_str(am_pm_str)?;
-        Ok(TimeStampParts {
-            time: time_part.to_string(),
-            am_or_pm,
-        })
+    fn from_parts<S: AsRef<str>>(military_str: S, time_part: S, am_pm_str: S) -> Result<Self> {
+        let am_or_pm = AmOrPm::from_str(am_pm_str.as_ref()).unwrap_or(AmOrPm::Am);
+        let time = format!("{} {}", military_str.as_ref(), time_part.as_ref());
+        Ok(TimeStampParts { time, am_or_pm })
     }
 
     fn formatted(&self, seps: &crate::Seperators) -> String {
@@ -109,7 +130,9 @@ pub enum AmOrPm {
     Pm,
 }
 
-impl AmOrPm {
+impl FromStr for AmOrPm {
+    type Err = eyre::ErrReport;
+
     fn from_str(s: &str) -> Result<Self> {
         match s.to_uppercase().as_str() {
             "AM" => Ok(AmOrPm::Am),
@@ -139,5 +162,26 @@ mod stamp_tests {
         let new_date = flip_date_format(&creation_time, &seps).unwrap();
 
         assert!(new_date.contains("_"));
+    }
+
+    #[should_panic]
+    #[test]
+    fn test_stamp_converter_no_time() {
+        let creation_time = "26/05/2022".to_string();
+        let seps = crate::Seperators::default();
+        let new_date = flip_date_format(&creation_time, &seps).unwrap();
+
+        assert_eq!(new_date, "2022-05-26");
+    }
+
+    #[test]
+    fn test_date_parts_formatted() {
+        let date = DateParts {
+            day:   "26".to_string(),
+            month: "05".to_string(),
+            year:  "2022".to_string(),
+        };
+        let formatted_date = date.formatted("/");
+        assert_eq!(formatted_date, "2022/05/26");
     }
 }

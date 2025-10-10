@@ -45,13 +45,53 @@ impl Folder {
 
 #[derive(Debug)]
 pub struct ValidFileTypes {
-    pub path:  PathBuf,
-    pub video: VideoType,
+    pub path:      PathBuf,
+    pub type_data: MediaType,
 }
 
 impl ValidFileTypes {
-    pub fn new(path: PathBuf, video: VideoType) -> Self {
-        ValidFileTypes { path, video }
+    pub fn new(path: PathBuf, type_data: MediaType) -> Self {
+        ValidFileTypes { path, type_data }
+    }
+}
+
+#[derive(Debug)]
+pub enum MediaType {
+    Video(VideoType),
+    Image(ImageType),
+}
+
+impl FromStr for MediaType {
+    type Err = eyre::Report;
+
+    fn from_str(s: &str) -> Result<Self> {
+        if let Ok(video_type) = VideoType::from_str(s) {
+            return Ok(MediaType::Video(video_type));
+        }
+        if let Ok(image_type) = ImageType::from_str(s) {
+            return Ok(MediaType::Image(image_type));
+        }
+        Err(eyre::eyre!("Invalid media type: {}", s))
+    }
+}
+
+#[derive(Debug)]
+pub enum ImageType {
+    Jpeg,
+    Png,
+    Heic,
+}
+
+impl FromStr for ImageType {
+    type Err = eyre::Report;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s.to_lowercase().as_str() {
+            "jpg" | "jpeg" => Ok(ImageType::Jpeg),
+            "png" => Ok(ImageType::Png),
+            "heic" => Ok(ImageType::Heic),
+            _ => Err(eyre::eyre!("Invalid image type: {}", s)),
+        }
     }
 }
 

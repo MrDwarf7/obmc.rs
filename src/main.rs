@@ -9,7 +9,9 @@ pub use processing::process_folder;
 pub use crate::prelude::*;
 pub use crate::seperators::Seperators;
 
-// TODO: Add a cli & add a proper logging system lol
+// TODO: proper logging
+
+// TODO: refactor stamp_converter to be less fragile (traits)
 
 // Apparently this can pull `media created at` from mp4 files
 // https://github.com/alfg/mp4-rust
@@ -62,6 +64,11 @@ pub fn data_dir() -> PathBuf {
     std::env::current_exe().unwrap().parent().unwrap().join("data")
 }
 
+#[allow(clippy::explicit_auto_deref)]
+pub fn get_data_dir() -> &'static PathBuf {
+    unsafe { &*DATA_DIR }
+}
+
 const HELP_TEXT_VALID: [&str; 2] = ["-h", "--help"];
 
 fn help_text() -> &'static str {
@@ -106,10 +113,10 @@ fn process_args() {
 fn main() -> Result<()> {
     process_args();
 
-    println!("Starting...");
+    println!("Starting in {}...", get_data_dir().display());
     let start = std::time::Instant::now();
 
-    let folders = folders::crawl_dir(unsafe { &*DATA_DIR }, CrawlType::Parallel)?;
+    let folders = folders::crawl_dir(get_data_dir(), CrawlType::Parallel)?;
 
     for folder in &folders.children {
         process_folder(folder);

@@ -4,7 +4,7 @@ use std::str::FromStr;
 use eyre::{Context, Result};
 use rayon::prelude::*;
 
-use super::{Folder, ValidFileTypes, VideoType};
+use super::{Folder, MediaType, ValidFileTypes};
 
 #[derive(Debug)]
 enum PathType {
@@ -49,19 +49,19 @@ pub(super) fn crawl_dir_recursive<P: AsRef<Path>>(root: &P) -> Result<Folder> {
             }
 
             PathType::File => {
-                let ext = match path.extension().and_then(|s| s.to_str()) {
+                let ext = match path.extension().map(|s| s.to_string_lossy()) {
                     Some(ext) => ext,
                     // Skip files without an extension or invalid UTF-8
                     None => continue,
                 };
 
-                let video_type = match VideoType::from_str(ext) {
-                    Ok(video_type) => video_type,
-                    // Skip invalid video types
+                let media_type = match MediaType::from_str(&ext) {
+                    Ok(media_type) => media_type,
+                    // Skip unsupported media types
                     Err(_) => continue,
                 };
 
-                let file = ValidFileTypes::new(path, video_type);
+                let file = ValidFileTypes::new(path, media_type);
                 folder.add_file(file);
             }
         }
@@ -92,8 +92,8 @@ pub fn crawl_dir_recursive_par<P: AsRef<Path>>(root: &P) -> Result<Folder> {
         .filter_map(|path| {
             // Get the extension
             let ext = path.extension()?.to_str()?;
-            let video_type = VideoType::from_str(ext).ok()?;
-            Some(ValidFileTypes::new(path, video_type))
+            let media_type = MediaType::from_str(ext).ok()?;
+            Some(ValidFileTypes::new(path, media_type))
         })
         .collect();
 

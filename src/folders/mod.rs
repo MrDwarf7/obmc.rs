@@ -6,7 +6,7 @@ use std::path::Path;
 // For internal use by crawl_dir
 use crawlers::{crawl_dir_recursive, crawl_dir_recursive_par};
 use eyre::Result;
-pub use folder_types::{Folder, Folders, ValidFileTypes, VideoType};
+pub use folder_types::{Folder, Folders, MediaType, ValidFileTypes};
 
 use crate::CrawlType;
 
