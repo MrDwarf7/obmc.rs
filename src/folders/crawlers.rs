@@ -6,8 +6,29 @@ use rayon::prelude::*;
 
 use super::{Folder, ValidFileTypes, VideoType};
 
-pub(super) fn crawl_dir_recursive(root: &Path) -> Result<Folder> {
-    let mut folder = Folder::new(root.to_path_buf());
+#[derive(Debug)]
+enum PathType {
+    File,
+    Directory,
+}
+
+impl<P> From<P> for PathType
+where
+    P: Clone + AsRef<Path>,
+{
+    #[inline]
+    fn from(path: P) -> Self {
+        let path = path.as_ref();
+        if path.is_dir() {
+            PathType::Directory
+        } else {
+            PathType::File
+        }
+    }
+}
+
+pub(super) fn crawl_dir_recursive<P: AsRef<Path>>(root: &P) -> Result<Folder> {
+    let mut folder = Folder::new(root.as_ref().to_path_buf());
 
     let entries = std::fs::read_dir(root).wrap_err("Failed to read directory")?;
 
@@ -15,37 +36,43 @@ pub(super) fn crawl_dir_recursive(root: &Path) -> Result<Folder> {
         let entry = entry_result.wrap_err("Failed to read entry")?;
         let path = entry.path();
 
-        if path.is_dir() {
-            let child_folder = crawl_dir_recursive(&path)?;
+        let path_type = PathType::from(&path.clone());
 
-            // Only add the folder if it contains files or subfolders
-            if !child_folder.children.is_empty() || !child_folder.children_files.is_empty() {
-                folder.add_folder(child_folder);
+        match path_type {
+            PathType::Directory => {
+                let child_folder = crawl_dir_recursive(&path)?;
+
+                // Only add the folder if it contains files or subfolders
+                if !child_folder.children.is_empty() || !child_folder.children_files.is_empty() {
+                    folder.add_folder(child_folder);
+                }
             }
-        } else if path.is_file() {
-            let ext = match path.extension().and_then(|s| s.to_str()) {
-                Some(ext) => ext,
-                // Skip files without an extension or invalid UTF-8
-                None => continue,
-            };
 
-            let video_type = match VideoType::from_str(ext) {
-                Ok(video_type) => video_type,
-                // Skip invalid video types
-                Err(_) => continue,
-            };
+            PathType::File => {
+                let ext = match path.extension().and_then(|s| s.to_str()) {
+                    Some(ext) => ext,
+                    // Skip files without an extension or invalid UTF-8
+                    None => continue,
+                };
 
-            let file = ValidFileTypes::new(path, video_type);
-            folder.add_file(file);
+                let video_type = match VideoType::from_str(ext) {
+                    Ok(video_type) => video_type,
+                    // Skip invalid video types
+                    Err(_) => continue,
+                };
+
+                let file = ValidFileTypes::new(path, video_type);
+                folder.add_file(file);
+            }
         }
     }
 
     Ok(folder)
 }
 
-pub fn crawl_dir_recursive_par(root: &Path) -> Result<Folder> {
-    let entries: Vec<_> = std::fs::read_dir(root)
-        .wrap_err_with(|| format!("Failed to read directory: {:?}", root))?
+pub fn crawl_dir_recursive_par<P: AsRef<Path>>(root: &P) -> Result<Folder> {
+    let entries: Vec<_> = std::fs::read_dir(root.as_ref())
+        .wrap_err_with(|| format!("Failed to read directory: {:?}", root.as_ref()))?
         .collect::<Result<Vec<_>, _>>()
         .wrap_err("Failed to collect directory entries")?;
 
@@ -92,7 +119,7 @@ pub fn crawl_dir_recursive_par(root: &Path) -> Result<Folder> {
         .collect();
 
     Ok(Folder {
-        path: root.to_path_buf(),
+        path: root.as_ref().to_path_buf(),
         children,
         children_files,
     })
@@ -100,10 +127,8 @@ pub fn crawl_dir_recursive_par(root: &Path) -> Result<Folder> {
 
 #[cfg(test)]
 mod crawler_tests {
-    use std::path::PathBuf;
-    use std::time;
 
-    use tempfile::{TempDir, tempdir};
+    use tempfile::tempdir;
 
     use super::*;
 
