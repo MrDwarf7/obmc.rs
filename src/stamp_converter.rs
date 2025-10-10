@@ -5,11 +5,8 @@ use eyre::eyre;
 pub use crate::prelude::*;
 
 // Function to flip the date format using the Stamp struct
-pub fn flip_date_format(
-    to_section: &str,
-    seps: &crate::Seperators,
-) -> Result<String> {
-    Ok(Stamp::from_str(to_section)?.formatted(&seps))
+pub fn flip_date_format(to_section: &str, seps: &crate::Seperators) -> Result<String> {
+    Ok(Stamp::from_str(to_section)?.formatted(seps))
 }
 
 // Main struct to represent the complete timestamp
@@ -23,7 +20,10 @@ impl Stamp {
         let mut parts = s.split_whitespace();
 
         // Parse date part
-        let date_str = parts.next().ok_or("Missing date part").expect("Missing date part");
+        let date_str = parts
+            .next()
+            .ok_or("Missing date part")
+            .expect("Missing date part");
         let date = DateParts::from_str(date_str)?;
 
         // Parse time and AM/PM parts, if present
@@ -38,18 +38,10 @@ impl Stamp {
         Ok(Stamp { date, time })
     }
 
-    fn formatted(
-        &self,
-        seps: &crate::Seperators,
-    ) -> String {
-        let date_formatted = self.date.formatted(&seps.date_sep);
+    fn formatted(&self, seps: &crate::Seperators) -> String {
+        let date_formatted = self.date.formatted(seps.date_sep);
         if let Some(ref time_stamp) = self.time {
-            format!(
-                "{}{}{}",
-                date_formatted,
-                &seps.date_time_sep,
-                time_stamp.formatted(&seps)
-            )
+            format!("{}{}{}", date_formatted, &seps.date_time_sep, time_stamp.formatted(seps))
         } else {
             date_formatted
         }
@@ -58,9 +50,9 @@ impl Stamp {
 
 // Struct to represent date parts
 pub struct DateParts {
-    day: String,
+    day:   String,
     month: String,
-    year: String,
+    year:  String,
 }
 
 impl DateParts {
@@ -71,16 +63,13 @@ impl DateParts {
         }
 
         Ok(DateParts {
-            day: date_components[0].to_string(),
+            day:   date_components[0].to_string(),
             month: date_components[1].to_string(),
-            year: date_components[2].to_string(),
+            year:  date_components[2].to_string(),
         })
     }
 
-    fn formatted(
-        &self,
-        date_sep: &str,
-    ) -> String {
+    fn formatted(&self, date_sep: &str) -> String {
         let date_parts = vec![&self.year, &self.month, &self.day];
         let mut buf = String::new();
         for part in date_parts {
@@ -94,15 +83,12 @@ impl DateParts {
 
 // Struct to represent time parts along with AM or PM
 pub struct TimeStampParts {
-    time: String,
+    time:     String,
     am_or_pm: AmOrPm,
 }
 
 impl TimeStampParts {
-    fn from_parts(
-        time_part: &str,
-        am_pm_str: &str,
-    ) -> Result<Self> {
+    fn from_parts(time_part: &str, am_pm_str: &str) -> Result<Self> {
         let am_or_pm = AmOrPm::from_str(am_pm_str)?;
         Ok(TimeStampParts {
             time: time_part.to_string(),
@@ -110,12 +96,9 @@ impl TimeStampParts {
         })
     }
 
-    fn formatted(
-        &self,
-        seps: &crate::Seperators,
-    ) -> String {
+    fn formatted(&self, seps: &crate::Seperators) -> String {
         // Replace ':' with '-'
-        let time_formatted = self.time.replace(":", &seps.time_sep);
+        let time_formatted = self.time.replace(":", seps.time_sep);
         format!("{}{}{}", time_formatted, &seps.am_pm_sep, self.am_or_pm)
     }
 }
@@ -137,10 +120,7 @@ impl AmOrPm {
 }
 
 impl Display for AmOrPm {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             AmOrPm::Am => write!(f, "AM"),
             AmOrPm::Pm => write!(f, "PM"),
@@ -151,7 +131,6 @@ impl Display for AmOrPm {
 #[cfg(test)]
 mod stamp_tests {
     use super::*;
-    use crate::prelude::*;
 
     #[test]
     fn test_stamp_converter() {
