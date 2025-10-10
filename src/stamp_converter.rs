@@ -135,7 +135,7 @@ mod stamp_tests {
     #[test]
     fn test_stamp_converter() {
         let creation_time = "26/05/2022 12:40 AM".to_string();
-        let seps = crate::Seperators::new(DATE_SEP, DATE_TIME_SEP, TIME_SEP, AM_PM_SEP);
+        let seps = crate::Seperators::default();
         let new_date = flip_date_format(&creation_time, &seps).unwrap();
 
         assert!(new_date.contains("_"));
