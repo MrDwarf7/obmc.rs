@@ -39,6 +39,7 @@ jobs:
         with:
           cache-all-crates: true
       - name: Setup Rust toolchain
+        shell: bash
         run: |
           rustup toolchain install
           rustup target add "${{ matrix.target }}" 2>/dev/null || true
@@ -84,6 +85,7 @@ jobs:
         with:
           cache-all-crates: true
       - name: Setup Rust toolchain
+        shell: bash
         run: |
           rustup toolchain install
           rustup target add "${{ matrix.target }}" 2>/dev/null || true
