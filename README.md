@@ -60,6 +60,30 @@ cd obmc.rs
 make build
 ```
 
+### System (curl pipe)
+
+```
+curl -fsSL https://github.com/MrDwarf7/obmc.rs/releases/latest/download/install.sh | bash
+```
+
+Detects your OS and architecture, downloads the right asset from the
+latest release, and installs to `/usr/local/bin`.
+
+### Manual download
+
+Grab the archive for your platform from the
+[releases page](https://github.com/MrDwarf7/obmc.rs/releases/latest).
+
+| OS | Archive |
+|----|---------|
+| Linux (x86_64) | `obmc-x86_64-unknown-linux-gnu-<tag>.zip` |
+| macOS (x86_64) | `obmc-x86_64-apple-darwin-<tag>.zip` |
+| macOS (Apple Silicon) | `obmc-aarch64-apple-darwin-<tag>.zip` |
+| Windows (x86_64) | `obmc-x86_64-pc-windows-msvc-<tag>.zip` |
+
+Extract the archive and place the `obmc` (or `obmc.exe`) binary somewhere
+in your `PATH`.
+
 ## Build
 
 ```
