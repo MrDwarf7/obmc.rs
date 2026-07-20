@@ -6,7 +6,7 @@ extend = [
 ]
 
 # Name of output if/when calling dist tasks, should match the cargo bin output
-env.PROJECT_NAME = "rust_template" # "cargo_output_binary_name_for_PROJECT_NAME"
+env.PROJECT_NAME = "obmc" # "cargo_output_binary_name_for_PROJECT_NAME"
 # Default profile to use for builds during dist related tasks
 env.SLEEP_TIME = "15"
 
@@ -22,6 +22,14 @@ run_task = { name = ["build"], parallel = false }
 [tasks.br]
 run_task = { name = ["build_release"], parallel = false }
 
+[tasks.ba]
+run_task = { name = [
+  "build_workspace",
+  "build",
+  "build_release_workspace",
+  "build_release",
+], parallel = false }
+
 [tasks.a]
 run_task = { name = [
   "build_workspace",
@@ -31,6 +39,10 @@ run_task = { name = [
   "build_release",
   "test_all",
 ], parallel = false }
+
+[tasks.A]
+description = "Full verification sweep for the repository."
+run_task = { name = ["format", "check", "clippy", "a"], parallel = false }
 
 [tasks.r]
 run_task = { name = ["run"], parallel = false }
@@ -89,4 +101,27 @@ run_task = { name = ["docker_stop"], parallel = false }
 env.PROFILE = "release"
 run_task = { name = ["build_release_dist"], parallel = false }
 
-# END Full sweeps/aliases
+## END Full sweeps/aliases
+
+
+## START typst tasks
+
+[tasks.typb]
+run_task = { name = ["typst_build"], parallel = false }
+
+# [tasks.typcl]
+# run_task = { name = ["typst_compile"], parallel = false }
+
+[tasks.typw]
+run_task = { name = ["typst_watch"], parallel = false }
+
+[tasks.typnw]
+run_task = { name = ["typst_watch_no_follow"], parallel = false }
+
+[tasks.typc]
+run_task = { name = ["typst_clean"], parallel = false }
+
+[tasks.typcl]
+run_task = { name = ["typst_clean"], parallel = false }
+
+## END typst tasks

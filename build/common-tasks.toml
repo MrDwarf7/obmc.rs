@@ -7,14 +7,13 @@ BREAKER = "----------------------------------------"
 ROOT = "."
 
 # Platform specific file extensions, can use specifics for
-# build/dist taks that call linux.(args|command) vs windows.(args|command)
+# build/dist tasks that call linux.(args|command) vs windows.(args|command)
 # WINDOWS_EXTENSION = ".exe"
 # LINUX_EXTENSION = ""
 # MACOS_EXTENSION = ""
 
 # BIN_EXTENSION = "${WINDOWS_EXTENSION}"
 
-# Currently hardcoding the env variable that's above for this
 # Using a 'decode-mapping' to set the correct extension
 BIN_EXTENSION = { source = "${CARGO_MAKE_RUST_TARGET_OS}", default_value = "", mapping = { "linux" = "", "macos" = "", "windows" = ".exe", "openbsd" = "" } }
 
@@ -131,14 +130,22 @@ args = ["test", "--all", "${@}", "--", "--nocapture"]
 command = "cargo"
 # We also capture anything after the main command
 args = ["run", "${@}"]
+dependencies = ["build_workspace", "build"]
 
 [tasks.run_release]
 command = "cargo"
 args = ["run", "--release", "${@}"]
+dependencies = ["build_release_workspace", "build_release"]
 
 [tasks.run_as_project]
 command = "cargo"
 args = ["run", " --bin", "${PROJECT_NAME}", "${@}"]
+dependencies = [
+  "build_workspace",
+  "build",
+  "build_release_workspace",
+  "build_release",
+]
 
 # END Function outputs
 
