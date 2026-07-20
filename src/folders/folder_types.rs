@@ -3,8 +3,6 @@ use std::str::FromStr;
 
 use eyre::Result;
 
-// Hidden from exterrnally - access the exposed fn crawl_dir, not the internal implementation
-
 #[derive(Debug, Default)]
 pub struct Folders {
     pub children: Vec<Folder>,
@@ -71,7 +69,7 @@ impl FromStr for MediaType {
         if let Ok(image_type) = ImageType::from_str(s) {
             return Ok(MediaType::Image(image_type));
         }
-        Err(eyre::eyre!("Invalid media type: {}", s))
+        Err(eyre::eyre!("Invalid media type: {s}"))
     }
 }
 
@@ -90,7 +88,7 @@ impl FromStr for ImageType {
             "jpg" | "jpeg" => Ok(ImageType::Jpeg),
             "png" => Ok(ImageType::Png),
             "heic" => Ok(ImageType::Heic),
-            _ => Err(eyre::eyre!("Invalid image type: {}", s)),
+            _ => Err(eyre::eyre!("Invalid image type: {s}")),
         }
     }
 }
@@ -108,7 +106,7 @@ impl FromStr for VideoType {
         match s.to_lowercase().as_str() {
             "mp4" => Ok(VideoType::Mp4),
             "mov" => Ok(VideoType::Mov),
-            _ => Err(eyre::eyre!("Invalid video type: {}", s)),
+            _ => Err(eyre::eyre!("Invalid video type: {s}")),
         }
     }
 }

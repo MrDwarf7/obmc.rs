@@ -1,8 +1,4 @@
-// in-crate Error type
-// pub use crate::error::Error;
-
 pub use std::path::PathBuf;
-pub use std::sync::LazyLock;
 
 use eyre::Error;
 
@@ -10,6 +6,7 @@ use eyre::Error;
 pub type Result<T> = std::result::Result<T, Error>;
 
 // Wrapper struct
+#[allow(dead_code)]
 pub struct W<T>(pub T);
 
 pub const DATE_SEP: &str = "_";
@@ -17,11 +14,22 @@ pub const DATE_TIME_SEP: &str = " ";
 pub const TIME_SEP: &str = ".";
 pub const AM_PM_SEP: &str = "";
 
-// $File = Get-Item "E:\GitHub\Rust\order_by_media_creation\data\test.mp4"
-// $ShellApplication = New-Object -ComObject Shell.Application
-// $ShellFolder = $ShellApplication.Namespace($File.Directory.FullName)
-// $ShellFile = $ShellFolder.ParseName($File.Name)
-//
-// # 208 = MediaCreated
-// $v = $ShellFolder.GetDetailsOf($ShellFile, 208)
-// Write-Host $v
+/// Fallback stamp when media metadata has no creation date.
+/// Prefer logging at the call site; this string must stay parseable by `Stamp`.
+pub const EPOCH_STAMP: &str = "01/01/1970 00:00 12:00 AM";
+
+#[cfg(debug_assertions)]
+pub fn default_data_dir() -> PathBuf {
+    std::env::current_dir()
+        .unwrap_or_else(|_| PathBuf::from("."))
+        .join("data")
+}
+
+/// Release builds resolve `./data` next to the executable.
+#[cfg(not(debug_assertions))]
+pub fn default_data_dir() -> PathBuf {
+    std::env::current_exe()
+        .ok()
+        .and_then(|exe| exe.parent().map(|p| p.join("data")))
+        .unwrap_or_else(|| PathBuf::from("data"))
+}
