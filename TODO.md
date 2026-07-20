@@ -11,4 +11,4 @@
 - [ ] Shared MediaParser (Arc<Mutex<P>> or thread-local) for buffer reuse
       across parallel crawl
 - [ ] More output formats (csv, json) for scripting
-- [ ] Config file support for default flags
+- [ ] Customizable name format (config file / args) -- `YYYY_MM_DD HH.MM HH.MMAP` default
