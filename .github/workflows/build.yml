@@ -47,10 +47,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: ${{ !contains(github.event.head_commit.message, 'skip ci') }}
     steps:
-      - uses: ./.github/actions/setup-rust
+      - uses: actions/checkout@v4
+      - uses: mozilla-actions/sccache-action@v0.0.9
+      - uses: Swatinem/rust-cache@v2
         with:
-          use-mold: false
-          target: ${{ matrix.target }}
+          cache-all-crates: true
+      - name: Setup Rust toolchain
+        run: |
+          rustup toolchain install
+          rustup target add "${{ matrix.target }}" 2>/dev/null || true
+          rustup show
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-binstall,cargo-make,just,taplo
 
       - name: ${{ matrix.task }}
         run: ${{ matrix.run }}
@@ -68,10 +78,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: ${{ !contains(github.event.head_commit.message, 'skip ci') }}
     steps:
-      - uses: ./.github/actions/setup-rust
+      - uses: actions/checkout@v4
+      - uses: mozilla-actions/sccache-action@v0.0.9
+      - uses: Swatinem/rust-cache@v2
         with:
-          use-mold: false
-          target: ${{ matrix.target }}
+          cache-all-crates: true
+      - name: Setup Rust toolchain
+        run: |
+          rustup toolchain install
+          rustup target add "${{ matrix.target }}" 2>/dev/null || true
+          rustup show
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-binstall,cargo-make,just,taplo
 
       - name: Run Cargo fmt
         run: cargo fmt --all --check
