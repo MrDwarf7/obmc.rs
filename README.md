@@ -63,7 +63,7 @@ make build
 ### System (curl pipe)
 
 ```
-curl -fsSL https://github.com/MrDwarf7/obmc.rs/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/MrDwarf7/obmc.rs/raw/main/build/install.sh | sh
 ```
 
 Detects your OS and architecture, downloads the right asset from the

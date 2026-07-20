@@ -23,29 +23,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
+        - os: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+        - os: windows-latest
+          target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: mozilla-actions/sccache-action@v0.0.9
-      - uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/setup-rust
         with:
-          cache-all-crates: true
-      - name: Setup Rust toolchain
-        shell: bash
-        run: |
-          rustup toolchain install
-          rustup target add "${{ matrix.target }}" 2>/dev/null || true
-          rustup show
-      - name: Install cargo tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-binstall,cargo-make,just,taplo
-
+          target: ${{ matrix.target }}
+          use-mold: true
       - name: Run Cargo Doc checks
         run: cargo doc --no-deps --all-features --all --locked --target ${{ matrix.target }} --document-private-items
         env:
@@ -56,27 +43,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
+        - os: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: mozilla-actions/sccache-action@v0.0.9
-      - uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/setup-rust
         with:
-          cache-all-crates: true
-      - name: Setup Rust toolchain
-        shell: bash
-        run: |
-          rustup toolchain install
-          rustup target add "${{ matrix.target }}" 2>/dev/null || true
-          rustup show
-      - name: Install cargo tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-binstall,cargo-make,just,taplo
-
+          target: ${{ matrix.target }}
+          use-mold: true
       - name: Run Cargo Doc generation
         env:
           RUSTDOCFLAGS: "-D warnings"
@@ -103,27 +77,14 @@ jobs:
     name: "Docs - package-docs-windows"
     strategy:
       matrix:
-        include:
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
+        - os: windows-latest
+          target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: mozilla-actions/sccache-action@v0.0.9
-      - uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/setup-rust
         with:
-          cache-all-crates: true
-      - name: Setup Rust toolchain
-        shell: bash
-        run: |
-          rustup toolchain install
-          rustup target add "${{ matrix.target }}" 2>/dev/null || true
-          rustup show
-      - name: Install cargo tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-binstall,cargo-make,just,taplo
-
+          target: ${{ matrix.target }}
+          use-mold: true
       - name: Run Cargo Doc generation
         env:
           RUSTDOCFLAGS: "-D warnings"
@@ -152,7 +113,8 @@ jobs:
           echo "Generated on: $(date -u +\"%Y-%m-%d %H:%M\") UTC" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v4
+      - name: Checkout sources
+        uses: actions/checkout@v4
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -173,7 +135,7 @@ jobs:
           echo $PWD
           echo "tree from single dot"
           tree -afh .
-          echo \\n\\n
+          echo \n\n
           echo "tree from github workspace call"
           tree -afh ${{ github.workspace }}
 

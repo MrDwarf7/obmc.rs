@@ -11,8 +11,8 @@ body:
       required: true
     attributes:
       label: "Software/Program Version"
-      description: "Run `bin --version` and paste the output here."
-      placeholder: "ex: bin 4.1.0"
+      description: "Run `obmc --version` and paste the output here."
+      placeholder: "ex: obmc 0.1.0"
   - type: "input"
     id: "rust_version"
     validations:

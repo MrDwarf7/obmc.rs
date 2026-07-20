@@ -1,62 +1,151 @@
-#!/usr/bin/env bash
-# obmc install script
-# Usage: curl -fsSL https://github.com/MrDwarf7/obmc.rs/releases/latest/download/install.sh | bash
-set -euo pipefail
+#!/bin/sh
+# obmc installer
+#   curl -fsSL https://github.com/MrDwarf7/obmc.rs/raw/main/build/install.sh | sh
+#
+# Environment variables:
+#   OBMC_VERSION       - version tag to install (default: latest)
+#   OBMC_INSTALL       - install dir (default: /usr/local/bin or ~/.local/bin)
+#   GITHUB_TOKEN       - avoids API rate limits in CI
+
+set -e
 
 REPO="MrDwarf7/obmc.rs"
+RELEASES_URL="https://github.com/$REPO/releases"
 BIN="obmc"
+INSTALL_DIR="${OBMC_INSTALL:-}"
 
-# ---- detect platform ----
-ARCH="$(uname -m)"
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+# ---- helpers ----
+has_cmd() { command -v "$1" >/dev/null 2>&1; }
 
-case "$OS" in
-  linux)
-    TARGET="${ARCH}-unknown-linux-gnu"
-    ;;
-  darwin)
-    [[ "$ARCH" == "arm64" ]] && ARCH="aarch64"
-    TARGET="${ARCH}-apple-darwin"
-    ;;
-  mingw*|msys*|cygwin*)
-    TARGET="${ARCH}-pc-windows-msvc"
-    BIN="${BIN}.exe"
-    ;;
-  *)
-    echo "Unsupported OS: $OS"
-    exit 1
-    ;;
-esac
+cleanup() { [ -n "${tmpdir:-}" ] && rm -rf "$tmpdir"; }
+trap cleanup EXIT
 
-# ---- fetch latest release tag ----
-echo "Fetching latest release..."
-LATEST="$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | sed -n 's/.*"tag_name": "\([^"]*\)".*/\1/p')"
-[[ -z "$LATEST" ]] && { echo "Could not find latest release"; exit 1; }
+die() {
+  echo "install: $*" >&2
+  exit 1
+}
+log() { echo "install: $*"; }
 
-ARCHIVE="${BIN%.exe}-${TARGET}-${LATEST}.zip"
-DOWNLOAD="https://github.com/$REPO/releases/download/${LATEST}/${ARCHIVE}"
+# ---- platform detection ----
+detect_os() {
+  os=$(uname -s)
+  case "$os" in
+  Linux)  echo linux ;;
+  Darwin) echo macos ;;
+  MINGW*|MSYS*|CYGWIN*) echo windows ;;
+  *) die "unsupported OS: $os (expected Linux, macOS, or Windows)" ;;
+  esac
+}
 
-echo "Downloading obmc ${LATEST} for ${TARGET}..."
-TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+detect_arch() {
+  arch=$(uname -m)
+  case "$arch" in
+  x86_64 | amd64)   echo x86_64 ;;
+  aarch64 | arm64)  echo aarch64 ;;
+  *) die "unsupported arch: $arch" ;;
+  esac
+}
 
-curl -fsSL "$DOWNLOAD" -o "$TMP/obmc.zip"
+os_to_target() {
+  case "$1" in
+  linux)   echo "unknown-linux-gnu" ;;
+  macos)   echo "apple-darwin" ;;
+  windows) echo "pc-windows-msvc" ;;
+  esac
+}
 
-# ---- extract ----
-cd "$TMP"
-unzip -q obmc.zip
-cd - >/dev/null
+# ---- version resolution ----
+fetch_latest_version() {
+  auth_arg=""
+  [ -n "${GITHUB_TOKEN:-}" ] && auth_arg="-H \"Authorization: Bearer ***\""
 
-# ---- install ----
-if [[ "$OS" == "mingw"* || "$OS" == "msys"* ]]; then
-  INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
-else
-  INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
+  # Try GitHub API first
+  api_url="https://api.github.com/repos/$REPO/releases/latest"
+  tag=$(eval curl -fsSL "$auth_arg" "$api_url" 2>/dev/null |
+    grep '"tag_name"' |
+    sed 's/.*"tag_name": *"\([^"]*\)".*/\1/' 2>/dev/null) ||
+    tag=""
+
+  # Fallback: follow release/latest redirect
+  if [ -z "$tag" ]; then
+    tag=$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+      "$RELEASES_URL/latest" 2>/dev/null |
+      sed -n 's|.*/tag/||p')
+  fi
+
+  [ -n "$tag" ] || die "could not resolve latest release. Install via \`cargo install obmc\` instead."
+  echo "$tag"
+}
+
+# ---- main ----
+os=$(detect_os)
+arch=$(detect_arch)
+log "detected ${os}/${arch}"
+
+exe=""
+[ "$os" = "windows" ] && exe=".exe"
+
+version="${OBMC_VERSION:-latest}"
+[ "$version" = "latest" ] && version=$(fetch_latest_version)
+log "version: $version"
+
+ver=$(echo "$version" | sed 's/^v//')
+target="${arch}-$(os_to_target "$os")"
+
+# Artifact name per draft.yml: obmc-<target>-<tag>.zip
+artifact="obmc-${target}-${version}.zip"
+download_url="$RELEASES_URL/download/$version/$artifact"
+checksum_url="$download_url.sha256"
+
+# Install dir
+if [ -z "$INSTALL_DIR" ]; then
+  if [ -w "/usr/local/bin" ]; then
+    INSTALL_DIR="/usr/local/bin"
+  else
+    INSTALL_DIR="$HOME/.local/bin"
+  fi
+fi
+mkdir -p "$INSTALL_DIR"
+
+# Download
+tmpdir=$(mktemp -d)
+log "downloading $artifact"
+curl -fsSL "$download_url" -o "$tmpdir/$artifact"
+
+# Checksum verification (best-effort)
+if has_cmd sha256sum; then
+  expected=$(curl -fsSL "$checksum_url" 2>/dev/null | awk '{print $1}') || expected=""
+  if [ -n "$expected" ]; then
+    actual=$(sha256sum "$tmpdir/$artifact" | awk '{print $1}')
+    [ "$expected" = "$actual" ] || die "checksum mismatch for $artifact"
+    log "checksum verified"
+  fi
+elif has_cmd shasum; then
+  expected=$(curl -fsSL "$checksum_url" 2>/dev/null | awk '{print $1}') || expected=""
+  if [ -n "$expected" ]; then
+    actual=$(shasum -a 256 "$tmpdir/$artifact" | awk '{print $1}')
+    [ "$expected" = "$actual" ] || die "checksum mismatch for $artifact"
+    log "checksum verified"
+  fi
 fi
 
-mkdir -p "$INSTALL_DIR"
-cp "$TMP/$BIN" "$INSTALL_DIR/$BIN"
-chmod +x "$INSTALL_DIR/$BIN"
+# Unzip
+has_cmd unzip && unzip -qo "$tmpdir/$artifact" -d "$tmpdir/extracted" ||
+  die "unzip is required. Install it with your package manager."
 
-echo "Installed obmc ${LATEST} to ${INSTALL_DIR}/${BIN}"
-echo "Run 'obmc --help' to get started."
+# Install binary
+src=$(find "$tmpdir/extracted" -type f -name "${BIN}${exe}" 2>/dev/null | head -1)
+[ -n "$src" ] || die "binary '${BIN}${exe}' not found in release archive"
+
+mv "$src" "$INSTALL_DIR/$BIN$exe"
+chmod +x "$INSTALL_DIR/$BIN$exe"
+log "installed to $INSTALL_DIR/$BIN$exe"
+
+# PATH hint
+case ":$PATH:" in
+*":$INSTALL_DIR:"*) ;;
+*) echo "  note: add $INSTALL_DIR to your PATH if not already" ;;
+esac
+
+echo ""
+echo "  obmc $ver installed. Run \`obmc --help\` to get started."

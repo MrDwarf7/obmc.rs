@@ -7,7 +7,7 @@ on:
     tags: ["v[0-9]+.[0-9]+.[0-9]?"]
 env:
   preview: ${{ github.event_name == 'release' && contains(github.event.release.tag_name, 'preview') }}
-  PROJECT_NAME: order_by_media_creation
+  PROJECT_NAME: obmc
 jobs:
   publish:
     name: "Publish - publish"
@@ -17,8 +17,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       #
-      - name: "Checkout sources"
-        uses: actions/checkout@master
+      - name: Checkout sources
+        uses: actions/checkout@v4
         #
       - name: "Download artifacts"
         uses: actions/download-artifact@v4
