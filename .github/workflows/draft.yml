@@ -21,7 +21,7 @@ env:
   RUST_BACKTRACE: 1
   SCCACHE_GHA_ENABLED: true
   RUSTC_WRAPPER: sccache
-  PROJECT_NAME: order_by_media_creation
+  PROJECT_NAME: obmc
 
 jobs:
   build-unix:
@@ -34,6 +34,7 @@ jobs:
     steps:
       - uses: ./.github/actions/setup-rust
         with:
+          use-mold: false
           target: ${{ matrix.target }}
 
       - name: Build
@@ -67,6 +68,7 @@ jobs:
     steps:
       - uses: ./.github/actions/setup-rust
         with:
+          use-mold: false
           target: ${{ matrix.target }}
 
       - name: Build

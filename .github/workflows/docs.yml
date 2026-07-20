@@ -15,7 +15,7 @@ env:
   RUST_BACKTRACE: 1
   SCCACHE_GHA_ENABLED: true
   RUSTC_WRAPPER: sccache
-  PROJECT_NAME: order_by_media_creation
+  PROJECT_NAME: obmc
 
 jobs:
   docs:
@@ -31,6 +31,7 @@ jobs:
     steps:
       - uses: ./.github/actions/setup-rust
         with:
+          use-mold: false
           target: ${{ matrix.target }}
 
       - name: Run Cargo Doc checks
@@ -49,6 +50,7 @@ jobs:
     steps:
       - uses: ./.github/actions/setup-rust
         with:
+          use-mold: false
           target: ${{ matrix.target }}
 
       - name: Run Cargo Doc generation
@@ -83,6 +85,7 @@ jobs:
     steps:
       - uses: ./.github/actions/setup-rust
         with:
+          use-mold: false
           target: ${{ matrix.target }}
 
       - name: Run Cargo Doc generation

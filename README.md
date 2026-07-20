@@ -12,9 +12,14 @@ screenshot.png  -->  2023_10_07 15.24 03.24PM screenshot.png
 
 ## How it picks the date
 
-1. EXIF / container metadata (nom-exif -- JPEG, PNG, HEIC, AVIF, MP4, MOV)
+1. EXIF / container metadata (nom-exif)
 2. Filesystem birthtime or mtime (whichever is earlier)
 3. Epoch (1970-01-01) -- prints a warning
+
+## Supported formats
+
+Images: JPEG, PNG, HEIC, AVIF, TIFF, RAW (Canon CR3, Fujifilm RAF, Phase One IIQ)
+Video/Audio: MP4, MOV, MKV, AVI, WebM, 3GP
 
 ## Usage
 
