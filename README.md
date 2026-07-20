@@ -27,15 +27,15 @@ Video/Audio: MP4, MOV, MKV, AVI, WebM, 3GP
 obmc -f ./media
 ```
 
-| Flag | Description |
-|------|-------------|
-| `-f <dir>` | Target directory (default: `./data` debug, `<exe>/data` release) |
-| `-d` | Dry-run: print what would happen |
-| `--serial` | Single-threaded crawl (default: parallel via rayon) |
-| `--skip-existing` | Don't rename if destination already exists |
-| `-v` | Print version |
-| `-q` | Quiet: only print errors |
-| `--strict` | Exit with code 1 on any rename failure (for scripts) |
+| Flag              | Description                                                      |
+| ----------------- | ---------------------------------------------------------------- |
+| `-f <dir>`        | Target directory (default: `./data` debug, `<exe>/data` release) |
+| `-d`              | Dry-run: print what would happen                                 |
+| `--serial`        | Single-threaded crawl (default: parallel via rayon)              |
+| `--skip-existing` | Don't rename if destination already exists                       |
+| `-v`              | Print version                                                    |
+| `-q`              | Quiet: only print errors                                         |
+| `--strict`        | Exit with code 1 on any rename failure (for scripts)             |
 
 ## Name format
 
@@ -74,12 +74,12 @@ latest release, and installs to `/usr/local/bin`.
 Grab the archive for your platform from the
 [releases page](https://github.com/MrDwarf7/obmc.rs/releases/latest).
 
-| OS | Archive |
-|----|---------|
-| Linux (x86_64) | `obmc-x86_64-unknown-linux-gnu-<tag>.zip` |
-| macOS (x86_64) | `obmc-x86_64-apple-darwin-<tag>.zip` |
-| macOS (Apple Silicon) | `obmc-aarch64-apple-darwin-<tag>.zip` |
-| Windows (x86_64) | `obmc-x86_64-pc-windows-msvc-<tag>.zip` |
+| OS                    | Archive                                   |
+| --------------------- | ----------------------------------------- |
+| Linux (x86_64)        | `obmc-x86_64-unknown-linux-gnu-<tag>.zip` |
+| macOS (x86_64)        | `obmc-x86_64-apple-darwin-<tag>.zip`      |
+| macOS (Apple Silicon) | `obmc-aarch64-apple-darwin-<tag>.zip`     |
+| Windows (x86_64)      | `obmc-x86_64-pc-windows-msvc-<tag>.zip`   |
 
 Extract the archive and place the `obmc` (or `obmc.exe`) binary somewhere
 in your `PATH`.
