@@ -152,17 +152,26 @@ Images: JPEG, PNG, HEIC, AVIF, TIFF, RAW (Canon CR3, Fujifilm RAF, Phase One IIQ
 
 Video/Audio: MP4, MOV, MKV, AVI, WebM, 3GP
 
+## Dependencies
+
+| Tool | Minimum Version | Install |
+|------|-----------------|---------|
+| ffmpeg | 4.0+ | `pacman -S ffmpeg` / `brew install ffmpeg` |
+
 ## Build
 
 ```bash
 # Release binary
-make build          # or: cargo build --release
+cargo build --release
 
 # Run tests
-make test           # or: cargo test
+cargo test
 
 # Run locally
-make run            # or: cargo run -- <args>
+cargo run -- <args>
+
+# Install system-wide (via build/install.sh)
+curl -fsSL https://github.com/MrDwarf7/obmc.rs/raw/main/build/install.sh | sh
 ```
 
 ## License
