@@ -51,6 +51,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           use-mold: true
+
       - name: ${{ matrix.task }}
         run: ${{ matrix.run }}
 
@@ -70,6 +71,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           use-mold: true
+
       - name: Run Cargo fmt
         run: cargo fmt --all --check
 

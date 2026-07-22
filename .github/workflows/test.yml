@@ -35,5 +35,6 @@ jobs:
         with:
           target: ${{ matrix.target }}
           use-mold: true
+
       - name: Run Cargo test
         run: cargo test --all --locked --target ${{ matrix.target }}

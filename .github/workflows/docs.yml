@@ -33,6 +33,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           use-mold: true
+
       - name: Run Cargo Doc checks
         run: cargo doc --no-deps --all-features --all --locked --target ${{ matrix.target }} --document-private-items
         env:
@@ -51,6 +52,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           use-mold: true
+
       - name: Run Cargo Doc generation
         env:
           RUSTDOCFLAGS: "-D warnings"
@@ -85,6 +87,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           use-mold: true
+
       - name: Run Cargo Doc generation
         env:
           RUSTDOCFLAGS: "-D warnings"
