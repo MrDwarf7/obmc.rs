@@ -13,7 +13,7 @@ env.SLEEP_TIME = "15"
 
 # GitHub / repo metadata (set by setup.sh during template init)
 env.GITHUB_USER = "mrdwarf7"
-env.REPO_NAME = "obmc.rs"      # GitHub repo name (with .rs)
+env.REPO_NAME = "obmc.rs"                              # GitHub repo name (with .rs)
 env.GITHUB_URL = "https://github.com/mrdwarf7/obmc.rs"
 
 # Changelog tool configuration

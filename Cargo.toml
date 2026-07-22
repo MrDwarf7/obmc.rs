@@ -2,7 +2,7 @@ cargo-features = ["codegen-backend", "profile-rustflags", "trim-paths"]
 
 [package]
 name         = "obmc"
-version      = "0.1.0"
+version      = "0.2.0"
 authors      = ["MrDwarf7", "Blake B. <github.com/MrDwarf7>"]
 edition      = "2024"
 description  = "Organize media files by prefixing filenames with their media creation date"
@@ -12,8 +12,8 @@ build        = "build.rs"
 
 [package.metadata.winresource]
 OriginalFilename = "obmc.exe"
-FileDescription = "Organize media files by prefixing filenames with their media creation date"
-LegalCopyright = "Copyright (c) Blake B. @github.com/MrDwarf7"
+FileDescription  = "Organize media files by prefixing filenames with their media creation date"
+LegalCopyright   = "Copyright (c) Blake B. @github.com/MrDwarf7"
 
 [target.'cfg(windows)'.build-dependencies]
 winresource = "0.1.19"
