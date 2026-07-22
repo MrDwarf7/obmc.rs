@@ -136,11 +136,7 @@ fn try_media_creation(path: &Path, parser: &mut MediaParser) -> Option<DateTime<
                 }
             };
             let exif: Exif = iter.into();
-            for tag in [
-                ExifTag::DateTimeOriginal,
-                ExifTag::CreateDate,
-                ExifTag::ModifyDate,
-            ] {
+            for tag in [ExifTag::DateTimeOriginal, ExifTag::CreateDate, ExifTag::ModifyDate] {
                 if let Some(v) = exif.get(tag)
                     && let Some(dt) = entry_to_local(v)
                 {

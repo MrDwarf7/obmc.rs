@@ -23,9 +23,7 @@ impl FromStr for Stamp {
     fn from_str(s: &str) -> Result<Self> {
         let mut parts = s.split_whitespace();
 
-        let date_str = parts
-            .next()
-            .ok_or_else(|| eyre!("Missing date part in stamp: {s:?}"))?;
+        let date_str = parts.next().ok_or_else(|| eyre!("Missing date part in stamp: {s:?}"))?;
         let date = DateParts::from_str(date_str)?;
 
         // Dual-time layout from get_creation_time:
@@ -42,9 +40,7 @@ impl FromStr for Stamp {
             // Date-only input is valid (no time suffix in output).
             (None, None, None) => None,
             // Legacy single 12h form: "DD/MM/YYYY HH:MM AM"
-            (Some(time_str), Some(am_pm_str), None) => {
-                Some(TimeStampParts::from_single(time_str, am_pm_str)?)
-            }
+            (Some(time_str), Some(am_pm_str), None) => Some(TimeStampParts::from_single(time_str, am_pm_str)?),
             _ => {
                 return Err(eyre!("Invalid time portion in stamp: {s:?}"));
             }
@@ -77,12 +73,11 @@ impl FromStr for DateParts {
     fn from_str(s: &str) -> Result<Self> {
         let potential_seps = ['-', '/', '.'];
 
-        let date_components: Vec<&str> =
-            if let Some(sep) = potential_seps.iter().find(|&&sep| s.contains(sep)) {
-                s.split(*sep).collect()
-            } else {
-                return Err(eyre!("Invalid date format: no valid separator found in {s:?}"));
-            };
+        let date_components: Vec<&str> = if let Some(sep) = potential_seps.iter().find(|&&sep| s.contains(sep)) {
+            s.split(*sep).collect()
+        } else {
+            return Err(eyre!("Invalid date format: no valid separator found in {s:?}"));
+        };
 
         if date_components.len() != 3 {
             return Err(eyre!("Invalid date format: expected 3 components, got {date_components:?}"));

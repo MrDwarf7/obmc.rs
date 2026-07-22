@@ -26,8 +26,7 @@ impl From<&Path> for PathType {
 pub(super) fn crawl_dir_recursive(root: &Path) -> Result<Folder> {
     let mut folder = Folder::new(root.to_path_buf());
 
-    let entries =
-        std::fs::read_dir(root).wrap_err_with(|| format!("Failed to read directory: {}", root.display()))?;
+    let entries = std::fs::read_dir(root).wrap_err_with(|| format!("Failed to read directory: {}", root.display()))?;
 
     for entry_result in entries {
         let entry = entry_result.wrap_err("Failed to read directory entry")?;
@@ -83,9 +82,7 @@ pub(super) fn crawl_dir_recursive_par(root: &Path) -> Result<Folder> {
         .into_par_iter()
         .filter_map(|dir_path| {
             match crawl_dir_recursive_par(&dir_path) {
-                Ok(folder) if !folder.children.is_empty() || !folder.children_files.is_empty() => {
-                    Some(folder)
-                }
+                Ok(folder) if !folder.children.is_empty() || !folder.children_files.is_empty() => Some(folder),
                 Ok(_) => None,
                 Err(e) => {
                     eprintln!("[warn] error processing directory {}: {e}", dir_path.display());

@@ -9,12 +9,7 @@ pub struct Separators<'a> {
 }
 
 impl Separators<'_> {
-    pub fn new<'a>(
-        date_sep: &'a str,
-        date_time_sep: &'a str,
-        time_sep: &'a str,
-        am_pm_sep: &'a str,
-    ) -> Separators<'a> {
+    pub fn new<'a>(date_sep: &'a str, date_time_sep: &'a str, time_sep: &'a str, am_pm_sep: &'a str) -> Separators<'a> {
         Separators {
             date_sep,
             date_time_sep,
