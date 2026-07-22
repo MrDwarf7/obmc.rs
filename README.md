@@ -1,16 +1,21 @@
 <!-- PROJECT LOGO / BANNER -->
 <p align="center">
-  <img src="assets/logo.svg" alt="obmc" width="150">
+  <img src="assets/README-header.png" alt="obmc" width="100%">
 </p>
 
 <p align="center">
-  <strong>obmc.rs</strong> — Order By Media Creation
+  <img src="assets/icon-128.png" alt="obmc icon" width="64">
+</p>
+
+<p align="center">
+  <strong>obmc.rs</strong> -- Order By Media Creation
   <br>
   <a href="https://crates.io/crates/obmc"><img src="https://img.shields.io/crates/v/obmc" alt="crates.io"></a>
   <a href="https://github.com/MrDwarf7/obmc.rs/actions/workflows/build.yml"><img src="https://github.com/MrDwarf7/obmc.rs/actions/workflows/build.yml/badge.svg" alt="build"></a>
   <a href="LICENSE-MIT"><img src="https://img.shields.io/badge/license-MIT-blue" alt="license"></a>
   <a href="https://github.com/MrDwarf7/obmc.rs/releases"><img src="https://img.shields.io/github/v/release/MrDwarf7/obmc.rs" alt="release"></a>
 </p>
+
 
 <!-- TAGLINE + DESCRIPTION -->
 ## obmc
