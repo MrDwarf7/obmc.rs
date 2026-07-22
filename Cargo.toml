@@ -8,6 +8,15 @@ edition      = "2024"
 description  = "Organize media files by prefixing filenames with their media creation date"
 license-file = "LICENSE"
 readme       = "README.md"
+build        = "build.rs"
+
+[package.metadata.winresource]
+OriginalFilename = "obmc.exe"
+FileDescription = "Organize media files by prefixing filenames with their media creation date"
+LegalCopyright = "Copyright (c) Blake B. @github.com/MrDwarf7"
+
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1.19"
 
 [dependencies]
 clap     = { version = "4", features = ["derive"] }
